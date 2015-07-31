@@ -7,7 +7,7 @@ var express = require('express'),
 //console.log(__dirname);
 app.use('/', express.static(__dirname + '/www'));
 
-server.listen(3000);
+server.listen(process.env.PORT || 3000);
 
 io.sockets.on('connection', function(socket){
 	
