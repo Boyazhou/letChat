@@ -2,6 +2,7 @@ var express = require('express'),
 	app = express(),
 	server = require('http').createServer(app),
 	io = require('socket.io').listen(server),
+	mongoose = require('mongoose');
 	users = {};
 	
 //console.log(__dirname);
@@ -9,6 +10,14 @@ app.use('/', express.static(__dirname + '/www'));
 
 server.listen(process.env.PORT || 3000);
 
+//connect database
+mongoose.connect('mongodb://localhost/chat', function(err){
+	if(err){
+		console.log(err);
+	}else{
+		console.log('Connected to mongodb');
+	}
+});
 io.sockets.on('connection', function(socket){
 	
 	
@@ -29,6 +38,7 @@ io.sockets.on('connection', function(socket){
 	function updateNicknames(){
 		io.sockets.emit('usernames', Object.keys(users));
 	}
+
 	/**
 	socket.on('send message', function(data){
 			console.log("data");
@@ -37,7 +47,21 @@ io.sockets.on('connection', function(socket){
 	});
 	*/
 	socket.on('postMsg', function(msg, color){
-		socket.broadcast.emit('newMsg', socket.nickname, msg, color);
+		msg = msg.trim();
+		if(msg.substr(0, 3) === '/w '){
+			msg = msg.substr(3);
+			var ind = msg.indexOf(':');
+			var name = msg.substr(0, ind);
+			if(ind !== msg.length - 1){
+				msg = msg.substr(ind + 1);
+				if(name in users){
+					users[name].emit('whisper', socket.nickname, msg);
+				}
+			} 	
+		}
+		else{
+			socket.broadcast.emit('newMsg', socket.nickname, msg, color);
+		}
 	});
 	
 	socket.on('img', function(imgData, color){
@@ -50,8 +74,5 @@ io.sockets.on('connection', function(socket){
 		delete users[socket.nickname];
 		updateNicknames();
 		socket.broadcast.emit('system', socket.nickname, Object.keys(users).length, 'logout');
-	});
-	
-	
-	
+	});	
 });
