@@ -35,8 +35,14 @@ Letschat.prototype = {
 				message.focus();
 				if(msg.trim().length != 0){
 					that.socket.emit('postMsg', msg, color);
-					that._displayNewMsg('me', msg, color);
+					if(msg.substr(0, 3) !== '/w '){
+						that._displayNewMsg('me', msg, color);
+					}
 				}
+			}, false);
+			//clear button
+			document.getElementById('clearBtn').addEventListener('click', function() {
+				document.getElementById('chat').innerHTML = '';
 			}, false);
 			//send image button add event listener
 			document.getElementById('sendImage').addEventListener('change', function(){
@@ -77,9 +83,12 @@ Letschat.prototype = {
 				  if (e.keyCode == 13 && msg.trim().length != 0) {
 					  messageInput.value = '';
 					  that.socket.emit('postMsg', msg, color);
-					  that._displayNewMsg('me', msg, color);
+					  if(msg.substr(0, 3) !== '/w '){
+						that._displayNewMsg('me', msg, color);
+					  }
 				  };
 			  }, false);
+			 
 		});
 		//nickname is taken
 		this.socket.on('nickExisted', function() {
@@ -93,12 +102,19 @@ Letschat.prototype = {
 		});
 		//update usernames
 		this.socket.on('usernames', function(data){
-				var html = '';
+				$("#users").empty();
+				var container = document.getElementById('users');
 				for(i=0; i < data.length; i++){
-					html += data[i] + '<br/>'
+					user = document.createElement('div');
+					user.id = 'singleUser';
+					user.innerHTML = data[i];
+					container.appendChild(user);
+					//whisper
+					user.addEventListener('click', function(e){
+					  var messageInput = document.getElementById('message');
+					   messageInput.innerHTML = '/w ' + e.target.innerHTML + ':';
+					}, false);
 				}
-				console.log(html);
-				document.getElementById('users').innerHTML = html;
 		});
 		
 		this.socket.on('system', function(nickName, userCount, type){
@@ -113,6 +129,11 @@ Letschat.prototype = {
 		
 		this.socket.on('newImg', function(user, img, color){
 			that._displayImage(user, img, color);
+		});
+		
+		this.socket.on('whisper', function(user, msg){
+			msg = '<i>' + msg + '</i>';
+			that._displayNewMsg(user, msg, 'gray');
 		});
 		//emoji
 		this._initialEmoji();
@@ -135,6 +156,7 @@ Letschat.prototype = {
 		}, false);
 	},
 	
+	//display the message in the chat box
 	_displayNewMsg: function(user, msg, color){
 		var container = document.getElementById('chat');
 			msgToDisplay = document.createElement('p');
@@ -189,42 +211,3 @@ Letschat.prototype = {
 	}
 };
 
-/*
-		jQuery(function($){
-			var socket = io.connect();
-			var $nickForm = $("#setNick");
-			var $nickError = $("#nickError");
-			var $nickBox = $("#nickname");
-			var $users = $("#users");
-			var $messageForm = $('#send-message');
-			var $messageBox = $('#message');
-			var $chat = $('#chat');
-			
-			$nickForm.submit(function(e){
-				e.preventDefault();
-				socket.emit('new user', $nickBox.val(), function(data){
-					if(data){
-						$('#nickWrap').hide();
-						$('#contentWrap').show();
-					}
-					else{
-						$nickError.html('That username is already taken! Try again!');
-					}
-				});
-				$nickBox.val('');
-			});
-			
-			
-			
-			$messageForm.submit(function(e){
-				e.preventDefault();
-				socket.emit('send message', $messageBox.val());
-				$messageBox.val('');
-			});
-			
-			socket.on('new message', function(data){
-				$chat.append('<b>' + data.nick + ': </b>' + data.msg + "<br/>");
-			});
-		});
-*/
-	
