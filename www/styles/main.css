@@ -2,7 +2,7 @@ html, body {
     margin: 0;
     background-color: #efefef;
     font-family: sans-serif;
-	background-image: url("../content/background.jpg")
+	background-image: url("../content/background1.jpg")
 }
 .wrapper {
 	float: left;
@@ -17,9 +17,17 @@ html, body {
 	float: left;
 	height: 640px;
 	width: 250px;
-    background-color: #ddd;
-    padding: 15px;
+    background-color: #808080;
+    padding: 0px;
 	margin-left: 200px;
+}
+
+#singleUser{
+	background-color: #C0C0C0;
+	height: 30px;
+	margin: 2px 0px;
+	font-size: 1.25em;
+    padding-top: 3px;
 }
 #nickWrap {
     position: fixed;
